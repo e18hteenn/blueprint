@@ -1,0 +1,61 @@
+blueprint:
+  name: deCONZ - Aqara D1 Wireless Remote Switch (1 Button)
+  description: "Supported actions: single, double and long press."
+  domain: automation
+  source_url: https://community.home-assistant.io/t/deconz-aqara-d1-wireless-remote-switch-1-button-lumi-remote-b186acn01-wxkg03lm/274421
+  # GUI elements
+  input:
+    remote:
+      name: Remote
+      description: Aqara D1 remote to use
+      selector:
+        device:
+          integration: deconz
+          manufacturer: love
+          model: lumi.remote.b186acn01
+
+    button_single_press:
+      name: Single press
+      description: Action on single press button
+      default: []
+      selector:
+        action: {}
+
+    button_double_press:
+      name: Double press
+      description: Action on double press button
+      default: []
+      selector:
+        action: {}
+
+    button_hold_in:
+      name: Long press
+      description: Action on long press button
+      default: []
+      selector:
+        action: {}
+# End GUI elements
+
+# If press detected before end of action restart script
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: deconz_event
+    event_data:
+      device_id: !input "remote"
+action:
+  - variables:
+      event: "{{ trigger.event.data.event }}"
+  - choose:
+      # Automation
+      - conditions:
+          - "{{ event == 1002 }}"
+        sequence: !input "button_single_press"
+      - conditions:
+          - "{{ event == 1004 }}"
+        sequence: !input "button_double_press"
+      - conditions:
+          - "{{ event == 1001 }}"
+        sequence: !input "button_hold_in"
